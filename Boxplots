@@ -1,0 +1,52 @@
+#1. Create PED file for the SNP of interest with the phenotype included
+
+#change snp name so plink can read - doing this with txt file 
+
+plink --bfile bfile --update-name snpname.txt --make-bed --out NEW_mtDNA
+
+
+#here creating the PED file using recode 
+
+plink --bfile NEW_mtDNA --snps snp_number --pheno pheno_file.txt --pheno-name pheno_name --recode --out snp_number
+
+
+
+2. Read the PED file into R
+
+#using R to plot
+x<-read.table("snp_number.ped")
+
+#here just updating this column as -9 values is missing and will not be positive integers to plot in the boxplot
+Data <- replace(x$V6, x$V6<0, NA)
+
+x$V6 <- Data
+
+
+head(x, 6)
+
+pdf("file_name.pdf")
+
+#get homozygote and heterozygotes
+AA<-subset(x, x[,7]=="A")
+nrow(AA)
+
+GGGA<- subset(x, x[,7]=="G")
+nrow(GGGA)
+
+GG<- subset(GGGA, GGGA[,8]=="G")
+nrow(GG)
+
+#now plot 
+boxplot(AA[,6], GG[,6], xlab="Genotype", ylab="pheno_name", main="SNP_name", names=c("AA","GG"), )
+
+
+dev.off()
+
+or
+
+#can use this if looking at T/C variant
+
+boxplot(CC[,6], TC[,6], TT[,6], xlab="Genotype", ylab="pheno_name", main="SNP_name", names=c("CC","TC","TT"), col="green")
+dev.off()
+
+#repeat for all snps of interest
